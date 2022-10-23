@@ -105,36 +105,36 @@ double convert_to_num(char *adress, Direction DIR){
 //Transversing in the memory to right or left from the 
 //given starting adress. Cheacks if the given character exists.
 //Gives back the adress of that char.
-//If char doesn't exist in the given lenth then it ouputs NULL.
-char *cursor(char *cursor, size_t size, char c, Direction DIR){
+//If char doesn't exist till the given condition then it ouputs NULL.
+char *cursor(char *cursor, char condition, char c, Direction DIR){
 	switch(DIR){
 		case RIGHT:
-			while(size>0){
+			cursor++;
+			while(*cursor != condition){
 				if(*cursor == c){
 					//printf("Cursor found: %c\n", *cursor);
 					return cursor;
 				}
 				cursor++;
-				size--;
 			}
 			printf("Cursor did no found the required character!\n");
-			return NULL;
 			break;
 		case LEFT:
-			while(size>0){
+			cursor--;
+			while(*cursor != condition){
 				if(*cursor == c){
 					//printf("Cursor found: %c\n", *cursor);
 					return cursor;
 				}
 				cursor--;
-				size--;
 			}
 			printf("Cursor did no found the required character!\n");
-			return NULL;
 			break;
 		default:
 			printf("Error!\nThere is no such direction!\n");
+			break;
 	}	
+	return cursor;
 }
 
 //create BinaryNode
@@ -151,9 +151,11 @@ void create_BinaryNode(char *adress, BinaryNode *output, int index, double *vari
 					adress--;
 				}
 				output[index].px = &output[*adress-1].result;
+				*adress = 0;
 				break;
 			case 'x':
 				output[index].px = variable;
+				adress[-1] = 0;
 				break;
 			default:
 				output[index].x = convert_to_num(adress-1, LEFT);
@@ -169,9 +171,11 @@ void create_BinaryNode(char *adress, BinaryNode *output, int index, double *vari
 					adress++;
 				}
 				output[index].py = &output[*adress-1].result;
+				*adress = 0;
 				break;
 			case 'x':
 				output[index].py = variable;
+				adress[1] = 0;
 				break;
 			default:
 				output[index].y = convert_to_num(adress+1, RIGHT);
@@ -215,29 +219,75 @@ void print_array(char *array, size_t size){
 	printf("%c}\n", array[size-1]);
 }
 
+//parses a blovk of 
+void parse_block(char *array, char *adress_0, BinaryNode *output, int *index, double *x){
+	printf("==============================================================\n");
+	char *adress;
+	adress = cursor(adress_0, ')', '*', RIGHT);
+	if(*adress == '*'){
+		create_BinaryNode(adress, output, *index, x);
+		*index += 1;
+	}
+	printf("2:  ");
+	print_array(array, 20);
+	adress = cursor(adress_0, ')', '/', RIGHT);
+	if(*adress == '/'){
+		create_BinaryNode(adress, output, *index, x);
+		*index += 1;
+	}
+	printf("3:  ");
+	print_array(array, 20);
+	adress = cursor(adress_0, ')', '+', RIGHT);
+	if(*adress == '+'){
+		create_BinaryNode(adress, output, *index, x);
+		*index += 1;
+	}
+	printf("4:  ");
+	print_array(array, 20);
+	adress = cursor(adress_0, ')', '-', RIGHT);
+	if(*adress == '-'){
+		create_BinaryNode(adress, output, *index, x);
+		*index += 1;
+	}
+	printf("5:  ");
+	print_array(array, 20);
+	adress = cursor(adress_0, ')', ')', RIGHT);
+	*adress_0 = 0;
+	*adress = 0;
+	printf("6:  ");
+	print_array(array, 20);
+	printf("==============================================================\n");
+}
+void parser(char *array, BinaryNode *output, int *index, double *x){
+	char *adress_0;
+	adress_0 = cursor(array, ')', '(', RIGHT);
+	printf("1:  ");
+	print_array(array, 20);
+
+	if(*adress_0 == '('){
+		parse_block(array, adress_0, output, index, x);
+		parser(array, output, index, x);
+		return;
+	}
+	printf("THE LAST ONE\n");
+	parse_block(array, array, output, index, x);
+}
+
 int main(){
-	char array[20] = {'\n','6','.','0','+','(', '7', '.', '0', '-', 'x', ')', '\n'};
+	char array[20] = {'(', '(','6','.','0','+', '7', '.', '0', ')', '-', 'x', '+', '5', '.', '0',')'};
 	double x = 10;
 	BinaryNode operations[5];
 
-	char *adress = cursor(array, 20, ')', RIGHT);
-	// *adress = 0;
-	adress = cursor(array, 20, '(', RIGHT);
-	*adress = 0;
-	
-	
-	adress = cursor(adress, 20, '-', RIGHT);
-	create_BinaryNode(adress, operations, 0, &x);
-
-	adress = cursor(array, 20, '+', RIGHT);
-	create_BinaryNode(adress, operations, 1, &x);	
-
+	//printf("The adress value: %c , %p\n", *adress, adress);
 	// adress = cursor(array, 20, '+', RIGHT);
-	
+	int index = 0;
+	parser(array, operations, &index, &x);
+
 	printf("-----------------------\n");
-	double result = eval_BinaryNode(operations, 2);
+	double result = eval_BinaryNode(operations, 3);
 	print_BinaryNode(operations[0]);
 	print_BinaryNode(operations[1]);
+	print_BinaryNode(operations[2]);
 
 	printf("The result: %f\n", result);
 
