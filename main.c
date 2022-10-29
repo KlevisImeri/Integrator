@@ -3,18 +3,21 @@
 
 typedef enum Direction{
 	RIGHT,
-	LEFT
+	LEFT,
+	AT,
+	BETWEEN
 } Direction;
 
-typedef struct BinaryNode{
+typedef struct Node{
 	char type; //is it + or - or...
+	int value; //every funciton has an int valu assign to it
 	double x; //the previos num
 	double y; //the previos num
 	double *px; //point to the previous result
 	double *py; //point to the previous result
 	double result;
 	int index;
-} BinaryNode;
+} Node;
 
 
 typedef struct UnaryNode{
@@ -26,7 +29,7 @@ typedef struct UnaryNode{
 } UnaryNode;
 
 //printing Binary node
-void print_BinaryNode(BinaryNode node){
+void print_Node(Node node){
 	printf("{type:%c, x:%f, y:%f, *px:%f, *py:%f, result:%f, index:%d}\n", node.type, node.x, node.y, *(node.px), *(node.py), node.result, node.index);
 }
 
@@ -112,23 +115,48 @@ char *cursor(char *cursor, char condition, char c, Direction DIR){
 			cursor++;
 			while(*cursor != condition){
 				if(*cursor == c){
-					//printf("Cursor found: %c\n", *cursor);
+					printf("Cursor at: %c\n", *cursor);
 					return cursor;
 				}
 				cursor++;
 			}
-			printf("Cursor did no found the required character!\n");
+			printf("Cursor at: %c\n", *cursor);
 			break;
+
 		case LEFT:
 			cursor--;
 			while(*cursor != condition){
 				if(*cursor == c){
-					//printf("Cursor found: %c\n", *cursor);
+					printf("Cursor at: %c\n", *cursor);
 					return cursor;
 				}
 				cursor--;
 			}
-			printf("Cursor did no found the required character!\n");
+			printf("Cursor at: %c\n", *cursor);
+			break;
+
+		case BETWEEN:
+			cursor--;
+			while(*cursor != ')'){
+				if(*cursor >= condition && *cursor <= condition){
+					printf("Cursor at: %c\n", *cursor);
+					return cursor;
+				}
+				cursor--;
+			}
+			printf("Cursor at: %c\n", *cursor);
+			break;
+
+		case AT:
+			cursor++;
+			while(*cursor != ')'){
+				if(*cursor == condition || *cursor == c){
+					printf("Cursor at: %c\n", *cursor);
+					return cursor;
+				}
+				cursor++;
+			}
+			printf("Cursor at: %c\n", *cursor);
 			break;
 		default:
 			printf("Error!\nThere is no such direction!\n");
@@ -137,9 +165,9 @@ char *cursor(char *cursor, char condition, char c, Direction DIR){
 	return cursor;
 }
 
-//create BinaryNode
+//create Node
 //Ouputs at a specific location specified in the inputs
-void create_BinaryNode(char *adress, BinaryNode *output, int index, double *variable){
+void create_Node(char *adress, Node *output, int index, double *variable){
 		char *adress_0 = adress;
 		output[index].type = *adress;
 		output[index].index = index;
@@ -182,13 +210,17 @@ void create_BinaryNode(char *adress, BinaryNode *output, int index, double *vari
 				output[index].py = &output[index].y;
 				break;
 		}
-		print_BinaryNode(output[index]);
+		print_Node(output[index]);
 }
 
-//evaluate BinaryNode
-double eval_BinaryNode(BinaryNode *node, size_t size){
+//evaluate Node
+double eval_Node(Node *node, size_t size){
 	while(size>0){
 		switch (node->type){
+		case '^':
+			node->result = pow(node->px[0], node->py[0]);
+			// printf("Result: %f index: %d\n", node->result, node->index);
+			break;
 		case '*':
 			node->result = node->px[0] * node->py[0];
 			break;
@@ -219,79 +251,123 @@ void print_array(char *array, size_t size){
 	printf("%c}\n", array[size-1]);
 }
 
-//parses a blovk of 
-void parse_block(char *array, char *adress_0, BinaryNode *output, int *index, double *x){
-	printf("==============================================================\n");
+//searches for nodes and creates them according with
+//the order of operations and the hiearchy.
+void node_parser(char *array, size_t size, char *adress_0, Node *output, int *index, double *x){
 	char *adress;
-	adress = cursor(adress_0, ')', '*', RIGHT);
-	if(*adress == '*'){
-		create_BinaryNode(adress, output, *index, x);
-		*index += 1;
+	int terminate;
+
+	terminate = 1;
+	while(terminate == 1){
+		print_array(array, size);
+		adress = cursor(adress_0, 'a', 'z', BETWEEN);
+		
+		if(*adress == '^'){
+			create_Node(adress, output, *index, x);
+			*index += 1;
+		}else{
+			terminate = 0;
+		}
 	}
-	printf("2:  ");
-	print_array(array, 20);
-	adress = cursor(adress_0, ')', '/', RIGHT);
-	if(*adress == '/'){
-		create_BinaryNode(adress, output, *index, x);
-		*index += 1;
+
+	terminate = 1;
+	while(terminate == 1){
+		print_array(array, size);
+		adress = cursor(adress_0, ')', '^', RIGHT);
+		if(*adress == '^'){
+			create_Node(adress, output, *index, x);
+			*index += 1;
+		}else{
+			terminate = 0;
+		}
 	}
-	printf("3:  ");
-	print_array(array, 20);
-	adress = cursor(adress_0, ')', '+', RIGHT);
-	if(*adress == '+'){
-		create_BinaryNode(adress, output, *index, x);
-		*index += 1;
+	
+
+	terminate = 1;
+	while(terminate == 1){
+		print_array(array, size);
+		adress = cursor(adress_0, '*', '/', AT);
+		if(*adress == '*' || *adress == '/'){
+			create_Node(adress, output, *index, x);
+			*index += 1;
+		}else{
+			terminate = 0;
+		}
 	}
-	printf("4:  ");
-	print_array(array, 20);
-	adress = cursor(adress_0, ')', '-', RIGHT);
-	if(*adress == '-'){
-		create_BinaryNode(adress, output, *index, x);
-		*index += 1;
+
+	
+	terminate = 1;
+	while(terminate == 1){	
+		print_array(array, size);
+		adress = cursor(adress_0, '+', '-', AT);
+		if(*adress == '+' || *adress == '-'){
+			create_Node(adress, output, *index, x);
+			*index += 1;
+		}else{
+			terminate = 0;
+		}
 	}
-	printf("5:  ");
-	print_array(array, 20);
+	
+	printf("Removing Block '( ')'------------------\n");
 	adress = cursor(adress_0, ')', ')', RIGHT);
 	*adress_0 = 0;
 	*adress = 0;
 	printf("6:  ");
-	print_array(array, 20);
-	printf("==============================================================\n");
+	print_array(array, size);
+	printf("Done------------------------------------\n");
 }
-void parser(char *array, BinaryNode *output, int *index, double *x){
+
+//Find the openening of bloack and calls the node_parser 
+//to create the nodes.
+void parser(char *array, size_t size, Node *output, int *index, double *x){
+	//printing before starting
+	printf("1:  ");
+	print_array(array, size);
+
 	char *adress_0;
 	adress_0 = cursor(array, ')', '(', RIGHT);
-	printf("1:  ");
-	print_array(array, 20);
-
-	if(*adress_0 == '('){
-		parse_block(array, adress_0, output, index, x);
-		parser(array, output, index, x);
-		return;
+	
+	while(*adress_0 == '('){
+		printf("Recursive Parsing-------------------------\n");
+		parser(adress_0, size, output, index, x);
+		printf("Done--------------------------------------\n");
+		adress_0 = cursor(array, ')', '(', RIGHT);
 	}
-	printf("THE LAST ONE\n");
-	parse_block(array, array, output, index, x);
+
+	printf("Parsing Nodes-------------------------------\n");
+	node_parser(array, size, array, output, index, x);
+	printf("Done--------------------------------------\n");
+}	
+
+//prints an array of nodes
+void print_Node_array(Node *array, int index){
+	for(int i = 0; i<index; i++){
+		print_Node(array[i]);
+	}
 }
 
 int main(){
-	char array[20] = {'(', '(','6','.','0','+', '7', '.', '0', ')', '-', 'x', '+', '5', '.', '0',')'};
-	double x = 10;
-	BinaryNode operations[5];
+	// char array[40] = "((x+2.0^4.0*x/1.0)+1.0+(4.0+x))";
+	char array[40] = "(sin(x))";
+
+	double x = 2;
+	Node operations[20];
 
 	//printf("The adress value: %c , %p\n", *adress, adress);
 	// adress = cursor(array, 20, '+', RIGHT);
 	int index = 0;
-	parser(array, operations, &index, &x);
+	parser(array, 40, operations, &index, &x);
 
-	printf("-----------------------\n");
-	double result = eval_BinaryNode(operations, 3);
-	print_BinaryNode(operations[0]);
-	print_BinaryNode(operations[1]);
-	print_BinaryNode(operations[2]);
+	printf("Evaluating-----------------------\n");
+	double result = eval_Node(operations, index);
+	printf("Done------------------------------\n");	
+	printf("Printing-----------------------\n");
+	print_Node_array(operations, index);
+	printf("Done------------------------------\n");	
 
 	printf("The result: %f\n", result);
 
-	print_array(array, 20);
+	print_array(array, 40);
 
 	return 0;
 }

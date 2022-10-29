@@ -60,7 +60,7 @@ void printf_Tokens(Token tokens[]){
  //we need to chech if it inicialzing all to 0;
 
 //turns the string of expression to tokens
-void make_token(char* input_str, int size_of_array, Token* output_tokens){
+void make_token(char* input_str, int size_of_array, Token* output_tokens){p
 
     int index = 0;
     int tokens_index =0;
