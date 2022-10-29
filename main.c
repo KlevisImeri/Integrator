@@ -475,13 +475,25 @@ void print_Node_array(Node *array, int index){
 	}
 }
 
+double interval_integrator(char *operations, size_t size, double start, double end, double step){
+	double sum;
+	
+	for(; start != end; start += step){
+		
+	}
+	
+	for()
+
+}
+
 int main(){
 	// char array[40] = "((x+2^4*x/1)+1+(4+x)-x)";
 	// char array[40] = "(sin(-x))";
 	// char array[40] = "(cos(x+2)+sin(x))";
 	char array[40] = {'('};
-	double x = 2;
-	Node operations[20] = {0};
+	double start = 0;
+	double end = 1;
+	double step = 0.1;
 
 
 	int i = 1;
@@ -496,21 +508,27 @@ int main(){
 	array[i] = ')';
 	print_array(array, 40);
 
+	//creating the nodetree of the expression
+	Node operations[20] = {0};
+	size_t index  = 0;
+	parser(array, 40, operations, &index, &x);
+	
+	interval_integrator(operations, size, start, end, step)
 	//printf("The adress value: %c , %p\n", *adress, adress);
 	// adress = cursor(array, 20, '+', RIGHT);
-	int index = 0;
-	parser(array, 40, operations, &index, &x);
+	// int index = 0;
+	// parser(array, 40, operations, &index, &x);
 
-	printf("Evaluating-----------------------\n");
-	double result = eval_Node(operations, index);
-	printf("Done------------------------------\n");	
-	printf("Printing-----------------------\n");
-	print_Node_array(operations, index);
-	printf("Done------------------------------\n");	
+	// printf("Evaluating-----------------------\n");
+	// double result = eval_Node(operations, index);
+	// printf("Done------------------------------\n");	
+	// printf("Printing-----------------------\n");
+	// print_Node_array(operations, index);
+	// printf("Done------------------------------\n");	
 
-	printf("The result: %f\n", result);
+	// printf("The result: %f\n", result);
 
-	print_array(array, 40);
+	// print_array(array, 40);
 
 	return 0;
 }
