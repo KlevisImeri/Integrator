@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "nodelib.h"
 
 typedef struct rgb_data{
 		float r, g, b;
@@ -75,14 +76,14 @@ void save_bitmap(const char *file_name, int width, int height, int dpi, rgb_data
 	fclose(image);
 }
 
-int main(){
+void create_bitmap(Node *operations, size_t size, double *number_line_x, int width, int height, int dpi, int numberline_length){
 
-	int width  = 1000, height = 1000, dpi = 600;
+	// int width  = 1000, height = 1000, dpi = 600;
 
 	rgb_data *pixels = (rgb_data *)malloc(width * height* 3*sizeof(float));
 
-	int numberline_length = 4;
-	double divisions = 1000/8;
+	// int numberline_length = 4;
+	double divisions = 1000/(2*numberline_length);
 
 	//color the backgorund black
 	for(int x = 0; x < width; x++) {
@@ -93,16 +94,13 @@ int main(){
 				pixels[a].g = 25;
 				pixels[a].b = 26;
 			
-				// pixels[a].r = 55;
-				// pixels[a].g = 55;
-				// pixels[a].b = 55;
 		}
 	}
 
-	
+	//creating the function
 	for(int x = 0; x < width; x++){
-		double number_line_x = (x/divisions)-numberline_length;
-		double number_line_y = sin(number_line_x);
+		*number_line_x = (x/divisions)-numberline_length;
+		double number_line_y = eval_Node(operations, size);
 		int y = round((number_line_y+numberline_length)*divisions) ;
 		if(y<=1000 && y>=0){
 			int a = y * width + x;
@@ -112,7 +110,8 @@ int main(){
 			pixels[a].b = 255;
 		}
 	}
-
+	
+	//y = 0 line
 	for(int x = 0; x < width; x++){
 		double number_line_y = 0;
 		int y = round((number_line_y+numberline_length)*divisions) ;
@@ -125,6 +124,7 @@ int main(){
 		}
 	}
 
+	//x = 0 line
 	for(int y = 0; y < height; y++){
 		double number_line_x = 0;
 		int x = round((number_line_x+numberline_length)*divisions) ;
@@ -140,6 +140,4 @@ int main(){
 
 	save_bitmap("fucntion.bmp", width, height, dpi, pixels);
 	free(pixels);
- 	
-	return 0;
 }
