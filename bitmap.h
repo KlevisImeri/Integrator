@@ -11,6 +11,6 @@ typedef struct rgb_data{
 		float r, g, b;
 } rgb_data;
 void save_bitmap(const char *file_name, int width, int height, int dpi, rgb_data *pixel_data);
-void create_bitmap(Node *operations, size_t size, double *start, int width, int height, int dpi, int numberline_length);
+void create_bitmap(Node *operations, size_t size, double *start, double end, double step, int width, int height, int dpi, int numberline_length);
 
 #endif

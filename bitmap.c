@@ -76,9 +76,10 @@ void save_bitmap(const char *file_name, int width, int height, int dpi, rgb_data
 	fclose(image);
 }
 
-void create_bitmap(Node *operations, size_t size, double *number_line_x, int width, int height, int dpi, int numberline_length){
-
-	// int width  = 1000, height = 1000, dpi = 600;
+void create_bitmap(Node *operations, size_t size, double *start, double end, double step, int width, int height, int dpi, int numberline_length){
+	//saving it for resetting the start
+	printf("integrator: %f\n", *start);
+	double i = *start;
 
 	rgb_data *pixels = (rgb_data *)malloc(width * height* 3*sizeof(float));
 
@@ -90,18 +91,73 @@ void create_bitmap(Node *operations, size_t size, double *number_line_x, int wid
 		for(int y = 0; y < height; y++) {
 			int a = y * width + x;
 
-				pixels[a].r = 24;
-				pixels[a].g = 25;
-				pixels[a].b = 26;
+			pixels[a].r = 24;
+			pixels[a].g = 25;
+			pixels[a].b = 26;
 			
 		}
 	}
 
+	//preperation
+	double number_line_y;
+	double number_line_x;
+	int y;
+	int x;
+	
+	//squares
+	//resetting
+	*start = i; 
+	int square_width;
+	int square_height;
+	int start_x;
+	for(; *start <= end; *start += step){
+		number_line_y = eval_Node(operations, size);
+		square_height = (number_line_y+numberline_length)*divisions;
+		start_x = (*start + numberline_length)*divisions;
+		square_width = (*start + step + numberline_length)*divisions;
+		//drawing square with specifined x and y
+		for(x=start_x ; x <= square_width && x<width; x++){
+			if(square_height>500){
+				for(y = 500; y<=square_height && y<height; y++){
+					int a = y * width + x;
+
+					//for the line surronding the squares
+					if(y==square_height || x==square_width || x==start_x){
+						pixels[a].r = 1;
+						pixels[a].g = 49;
+						pixels[a].b = 112;
+					}else{
+						pixels[a].r = 15;
+						pixels[a].g = 172;
+						pixels[a].b = 245;
+					}	
+				}	
+			}else{
+				for(y = 500; y>=square_height && y>0; y--){
+					int a = y * width + x;
+
+					//for the line surronding the squares
+					if(y==square_height || y==500 || x==square_width || x==start_x){
+						pixels[a].r = 1;
+						pixels[a].g = 49;
+						pixels[a].b = 112;
+					}else{
+						pixels[a].r = 15;
+						pixels[a].g = 172;
+						pixels[a].b = 245;
+					}	
+				}
+			}	
+		}
+	}
+
 	//creating the function
-	for(int x = 0; x < width; x++){
-		*number_line_x = (x/divisions)-numberline_length;
-		double number_line_y = eval_Node(operations, size);
-		int y = round((number_line_y+numberline_length)*divisions) ;
+	//puting it at the end so it is shown upfront
+	//it neds the start pointer for eval_Node
+	for(x = 0; x < width; x++){
+		*start = (x/divisions)-numberline_length;
+		number_line_y = eval_Node(operations, size);
+		y = round((number_line_y+numberline_length)*divisions) ;
 		if(y<=1000 && y>=0){
 			int a = y * width + x;
 
@@ -110,11 +166,11 @@ void create_bitmap(Node *operations, size_t size, double *number_line_x, int wid
 			pixels[a].b = 255;
 		}
 	}
-	
+
 	//y = 0 line
-	for(int x = 0; x < width; x++){
-		double number_line_y = 0;
-		int y = round((number_line_y+numberline_length)*divisions) ;
+	for(x = 0; x < width; x++){
+		number_line_y = 0;
+		y = round((number_line_y+numberline_length)*divisions);
 		if(y<=1000 && y>=0){
 			int a = y * width + x;
 
@@ -125,9 +181,9 @@ void create_bitmap(Node *operations, size_t size, double *number_line_x, int wid
 	}
 
 	//x = 0 line
-	for(int y = 0; y < height; y++){
-		double number_line_x = 0;
-		int x = round((number_line_x+numberline_length)*divisions) ;
+	for(y = 0; y < height; y++){
+		number_line_x = 0;
+		x = round((number_line_x+numberline_length)*divisions) ;
 		if(x<=1000 && x>=0){
 			int a = y * width + x;
 
@@ -137,6 +193,17 @@ void create_bitmap(Node *operations, size_t size, double *number_line_x, int wid
 		}
 	}
 
+	//divisions line for x
+	for(number_line_x=-numberline_length; number_line_x<=numberline_length; number_line_x++){
+		x = (number_line_x+numberline_length)*divisions;
+		for(y = 480; y<=520; y++){
+			int a = y * width + x;
+
+			pixels[a].r = 255;
+			pixels[a].g = 255;
+			pixels[a].b = 255;
+		}	
+	}
 
 	save_bitmap("fucntion.bmp", width, height, dpi, pixels);
 	free(pixels);
