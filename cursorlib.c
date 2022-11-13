@@ -4,61 +4,97 @@ typedef enum Direction{
 	RIGHT,
 	LEFT,
 	AT,
+	ATX,
 	BETWEEN
 } Direction;
 
-//Transversing in the memory to right or left from the 
-//given starting adress. Cheacks if the given character exists.
-//Gives back the adress of that char.
-//If char doesn't exist till the given condition then it ouputs NULL.
-char *cursor(char *cursor, char condition, char c, Direction DIR){
-	switch(DIR){
+/*
+	Parameters:
+	-cursor (from where you want to start)
+	-char1 (fist character)
+	-char2 (second character)
+	-mode (the mode of cursor)
+	Output:
+	-pointer in the char array to the found char
+	Transversing in the char array given the starting adress. 
+	Cheacks if the given character exists according to mode.
+	Gives back the adress of that char.
+*/
+char *cursor(char *cursor, char char1, char char2, Direction mode){
+	char char3 = 'x';
+	switch(mode){
 		case RIGHT:
-			cursor++;
-			while(*cursor != condition){
-				if(*cursor == c){
-					printf("Cursor at: %c\n", *cursor);
+			/*it start searching from the right of where it is
+				...+...
+					↑→
+			*/
+			for(cursor++; *cursor != char2; cursor++){
+				if(*cursor == char1){
+					// printf("Cursor at: %c\n", *cursor);
 					return cursor;
 				}
-				cursor++;
 			}
-			printf("Cursor at: %c\n", *cursor);
+			// printf("Cursor didn't found %c\n", char1);
+			// printf("Cursot at: %c\n", *cursor);
+			return cursor;
 			break;
 
 		case LEFT:
-			cursor--;
-			while(*cursor != condition){
-				if(*cursor == c){
-					printf("Cursor at: %c\n", *cursor);
+			/*it start searching from the right of where it is
+				...+...
+				 ←↑
+			*/
+			for(cursor--; *cursor != char2; cursor--){
+				if(*cursor == char1){
+					// printf("Cursor at: %c\n", *cursor);
 					return cursor;
 				}
-				cursor--;
 			}
-			printf("Cursor at: %c\n", *cursor);
+			// printf("Cursor didn't found %c\n", char1);
+			// printf("Cursot at: %c\n", *cursor);
+			return cursor;
 			break;
 
 		case BETWEEN:
-			cursor++;
-			while(*cursor != ')'){
-				if(*cursor >= condition && *cursor <= c && *cursor != 'x'){
-					printf("Cursor at: %c\n", *cursor);
+			/*
+				Until the next ')' checks if the value at 
+				curser is between the char values.
+			*/
+			for(cursor++; *cursor != ')'; cursor++){
+				if(*cursor >= char1 && *cursor <= char2 && *cursor != 'x'){
+					// printf("Cursor at: %c\n", *cursor);
 					return cursor;
 				}
-				cursor++;
 			}
-			printf("Cursor at: %c\n", *cursor);
+			// printf("No char such that %c=<c<=%c\n", char1, char2);
+			// printf("Cursot at: %c\n", *cursor);
+			return cursor;
 			break;
 
 		case AT:
-			cursor++;
-			while(*cursor != ')'){
-				if(*cursor == condition || *cursor == c){
-					printf("Cursor at: %c\n", *cursor);
+			/*
+				Until the next ')' checks if the value at 
+				courser is one of the char values.
+			*/
+			for(cursor++; *cursor != ')'; cursor++){
+				if(*cursor == char1 || *cursor == char2){
+					// printf("Cursor at: %c\n", *cursor);
+					return cursor;
+				} 
+			}
+			// printf("No char such that c=%c or c=%c\n", char1, char2);
+			// printf("Cursor at: %c\n", *cursor);
+			return cursor;
+			break;
+		case ATX:
+			
+			for(cursor++; *cursor != ')'; cursor++){
+				if(*cursor == char1 ||*cursor == char2 || *cursor == char3){
+					// printf("Cursor at: %c\n", *cursor);
 					return cursor;
 				}
-				cursor++;
 			}
-			printf("Cursor at: %c\n", *cursor);
+			return cursor;
 			break;
 		default:
 			printf("Error!\nThere is no such direction!\n");

@@ -78,13 +78,12 @@ void save_bitmap(const char *file_name, int width, int height, int dpi, rgb_data
 
 void create_bitmap(Node *operations, size_t size, double *start, double end, double step, int width, int height, int dpi, int numberline_length){
 	//saving it for resetting the start
-	printf("integrator: %f\n", *start);
 	double i = *start;
 
 	rgb_data *pixels = (rgb_data *)malloc(width * height* 3*sizeof(float));
 
-	// int numberline_length = 4;
-	double divisions = 1000/(2*numberline_length);
+	// int numberline_length ;
+	double divisions = width/(2*numberline_length);
 
 	//color the backgorund black
 	for(int x = 0; x < width; x++) {
@@ -111,36 +110,47 @@ void create_bitmap(Node *operations, size_t size, double *start, double end, dou
 	int square_height;
 	int start_x;
 	for(; *start <= end; *start += step){
-		number_line_y = eval_Node(operations, size);
+		number_line_y = eval_Nodes(operations, size);
 		square_height = (number_line_y+numberline_length)*divisions;
 		start_x = (*start + numberline_length)*divisions;
 		square_width = (*start + step + numberline_length)*divisions;
-		//drawing square with specifined x and y
-		for(x=start_x ; x <= square_width && x<width; x++){
-			if(square_height>500){
-				for(y = 500; y<=square_height && y<height; y++){
+		// drawing square with specifined x and y
+		//printf("start_x: %d square_width:%d  width:%d\n", start_x, square_width, width);
+		for(x=start_x; x <= square_width && x<width; x++){
+			if(square_height>=height/2){
+				//!!!y<height because of the segmentation falt (ovewrflow)
+				for(y = height/2; y<=square_height && y<height; y++){
 					int a = y * width + x;
 
+					// pixels[a].r = 15;
+					// pixels[a].g = 172;
+					// pixels[a].b = 245;
+					
 					//for the line surronding the squares
 					if(y==square_height || x==square_width || x==start_x){
-						pixels[a].r = 1;
-						pixels[a].g = 49;
-						pixels[a].b = 112;
+						pixels[a].r = 255;
+						pixels[a].g = 77;
+						pixels[a].b = 77;
 					}else{
 						pixels[a].r = 15;
 						pixels[a].g = 172;
 						pixels[a].b = 245;
 					}	
 				}	
-			}else{
-				for(y = 500; y>=square_height && y>0; y--){
+			}else{		
+				//!!!y>0 because of the segmentation falt (ovewrflow)
+				for(y = height/2; y>=square_height && y>0; y--){
 					int a = y * width + x;
 
+					// pixels[a].r = 15;
+					// pixels[a].g = 172;
+					// pixels[a].b = 245;
+
 					//for the line surronding the squares
-					if(y==square_height || y==500 || x==square_width || x==start_x){
-						pixels[a].r = 1;
-						pixels[a].g = 49;
-						pixels[a].b = 112;
+					if(y==square_height || y==height/2 || x==square_width || x==start_x){
+						pixels[a].r = 255;
+						pixels[a].g = 77;
+						pixels[a].b = 77;
 					}else{
 						pixels[a].r = 15;
 						pixels[a].g = 172;
@@ -156,22 +166,50 @@ void create_bitmap(Node *operations, size_t size, double *start, double end, dou
 	//it neds the start pointer for eval_Node
 	for(x = 0; x < width; x++){
 		*start = (x/divisions)-numberline_length;
-		number_line_y = eval_Node(operations, size);
-		y = round((number_line_y+numberline_length)*divisions) ;
-		if(y<=1000 && y>=0){
+		number_line_y = eval_Nodes(operations, size);
+		y = round((number_line_y+numberline_length)*divisions);
+		if(y<height && y>0){
 			int a = y * width + x;
 
 			pixels[a].r = 255;
 			pixels[a].g = 255;
 			pixels[a].b = 255;
+			
+			//Make it thicker
+			//The thicnes(3 in this case) can be as a parameter 
+			//to the fucntion
+			for(int i=0; i<5; i++){
+				
+				//So we don't oferflow the array at the edges
+				//printf("Height: %d < %d && %d > 0\n",y+i, height, y-i);
+				if(y+i<height && y-i>0){
+					//Right
+					pixels[a+i].r = 255;
+					pixels[a+i].g = 255;
+					pixels[a+i].b = 255;
+					//Left
+					pixels[a-i].r = 255;
+					pixels[a-i].g = 255;
+					pixels[a-i].b = 255;
+					//Upp
+					pixels[a+i*width].r = 255;
+					pixels[a+i*width].g = 255;
+					pixels[a+i*width].b = 255;
+					//Down
+					pixels[a-i*width].r = 255;
+					pixels[a-i*width].g = 255;
+					pixels[a-i*width].b = 255;
+				}
+			}
+			
 		}
 	}
 
 	//y = 0 line
 	for(x = 0; x < width; x++){
 		number_line_y = 0;
-		y = round((number_line_y+numberline_length)*divisions);
-		if(y<=1000 && y>=0){
+		y = (number_line_y+numberline_length)*divisions;
+		if(y<=height && y>=0){
 			int a = y * width + x;
 
 			pixels[a].r = 255;
@@ -183,8 +221,8 @@ void create_bitmap(Node *operations, size_t size, double *start, double end, dou
 	//x = 0 line
 	for(y = 0; y < height; y++){
 		number_line_x = 0;
-		x = round((number_line_x+numberline_length)*divisions) ;
-		if(x<=1000 && x>=0){
+		x = (number_line_x+numberline_length)*divisions;
+		if(x<=height && x>=0){
 			int a = y * width + x;
 
 			pixels[a].r = 255;
@@ -196,7 +234,7 @@ void create_bitmap(Node *operations, size_t size, double *start, double end, dou
 	//divisions line for x
 	for(number_line_x=-numberline_length; number_line_x<=numberline_length; number_line_x++){
 		x = (number_line_x+numberline_length)*divisions;
-		for(y = 480; y<=520; y++){
+		for(y = height/2-20; y<=height/2+20; y++){
 			int a = y * width + x;
 
 			pixels[a].r = 255;

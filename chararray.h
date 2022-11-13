@@ -2,8 +2,11 @@
 #define chararray
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 void print_char_array(char *array, size_t size);
-void input_char_array(char *array);
+void copyarr(char* destination, char* source, size_t size_source);
+void *take_expression(size_t *size);
 
 #endif

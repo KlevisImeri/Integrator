@@ -18,7 +18,7 @@ int char_to_int(char c){
 //Creates an integer written as an array of char. 
 //It evaluates from right ot left form the given starting point or '.' for decimal
 int string_to_int(char *start){
-	//to start form a number not th inputed char
+	//to start form a number not the inputed char
 	start--;
 
 	//preperation
@@ -50,11 +50,10 @@ double string_to_decimal(char *start){
 //converting a char to double
 //Takes in the adress of the first or last dig depending on direction
 double convert_to_num(char *adress, Direction DIR){
-	printf("%c---\n", *adress);
+	// printf("%c\n", *adress);
 	char *cursor = adress;
 	int num = 0;
 	double decimal = 0;
-
 	switch(DIR){
 		case RIGHT:
 			//while finds the '.' int the number

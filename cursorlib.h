@@ -7,8 +7,9 @@ typedef enum Direction{
 	RIGHT,
 	LEFT,
 	AT,
+	ATX,
 	BETWEEN
 } Direction;
-char *cursor(char *cursor, char condition, char c, Direction DIR);
+char *cursor(char *cursor, char char1, char char2, Direction mode);
 
 #endif

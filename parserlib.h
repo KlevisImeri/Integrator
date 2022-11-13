@@ -3,9 +3,9 @@
 
 #include "nodelib.h"
 #include "cursorlib.h"
-#include "chararray.h"
 
-void node_parser(char *array, size_t size, char *adress_0, Node *output, size_t *index, double *x);
-void parser(char *array, size_t size, Node *output, size_t *index, double *x);
+void print_block(char *block);
+void block_parser(char *block, Node *nodes, double *x);
+void parser(char *block, Node *nodes, double *x);
 
 #endif

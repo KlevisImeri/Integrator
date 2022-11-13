@@ -17,10 +17,11 @@ typedef struct Node{
 	double result;
 	int index;
 } Node;
+int number_of_nodes_in_expression(char *expression, size_t size_expression);
 void print_Node(Node node);
-int what_function(char *cursor, int *end);
-void create_Node(char *adress, Node *output, int index, double *variable);
-double eval_Node(Node *node, size_t size);
-void print_Node_array(Node *array, int index);
+void print_Node_array(Node *array, size_t size);
+char *what_function(char *cursor, int *type);
+void create_Node(char *adress, Node *nodes, double *variable);
+double eval_Nodes(Node *Nodes, size_t number_of_nodes);
 
 #endif
