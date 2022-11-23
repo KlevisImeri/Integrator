@@ -48,38 +48,41 @@ void print_block(char *block){
 	Searches for nodes and creates them according with
 	the order of operations and the hiearchy.
 */
-
 void block_parser(char *block, Node *nodes, double *x){
-	//print_block(block);
+	print_block(block);
 	/* Notes:
 		Usage of while loop, cursor and the order of while's 
 		taks care of the hierarchy of the operations.
 	*/
 
 	//preparing
-	char *cursor0;
+	char *cursor_;
 	int terminate;
 
 	//Checking for functions in the block
 	terminate = 1;
+	cursor_ = block;
 	while(terminate == 1){
-		cursor0 = cursor(block, 'a', 'z', BETWEEN);
-		if(*cursor0 == ')'){
+		cursor_ = cursor(cursor_, 'a', 'z', BETWEEN);
+		if(*cursor_ == ')'){
 			terminate = 0;
 		}else{
-			//print_block(block);
-			create_Node(cursor0, nodes, x);
+			printf("1");
+			print_block(block);
+			create_Node(cursor_, nodes, x);
 			index_nodes += 1;
 		}
 	}
 
 	//checking for '^'
 	terminate = 1;
+	cursor_ = block;
 	while(terminate == 1){
-		cursor0 = cursor(block, ')', '^', RIGHT);
-		if(*cursor0 == '^'){
-			//print_block(block);
-			create_Node(cursor0, nodes, x);
+		cursor_ = cursor(cursor_, ')', '^', RIGHT);
+		if(*cursor_ == '^'){
+			printf("2");
+			print_block(block);
+			create_Node(cursor_, nodes, x);
 			index_nodes += 1;
 		}else{
 			terminate = 0;
@@ -88,28 +91,14 @@ void block_parser(char *block, Node *nodes, double *x){
 	
 	//Checking for '*', '/','<num>x'
 	terminate = 1;
-	/*We need this new cursor because we need
-	to keep track of where the x is and start from
-	it and not from the begginig of the block.
-	If we start from the beggining of the block we will
-	never stop hitting that x.*/
-	char *cursor1 = block;
-	while(terminate == 1){
-		cursor0 = cursor(cursor1, '*', '/', ATX);
-		if(*cursor0 == '*' || *cursor0 == '/'){
-			//print_block(block);
-			create_Node(cursor0, nodes, x);
+	cursor_ = block;
+	while(terminate == 1){ 
+		cursor_ = cursor(cursor_, '*', '/', ATX);
+		if(*cursor_== '*' || *cursor_ == '/' || is_variable_multiplicaton(cursor_)){
+			printf("3");
+			print_block(block);
+			create_Node(cursor_, nodes, x);
 			index_nodes += 1;
-		}else if(*cursor0 == 'x'){
-			//For the unsiged * => <num>x or x (1*x)
-			if(is_num(cursor0[-1]) || (cursor0[-1] == '(' && cursor0[1] == ')')){
-				//print_block(block);
-				create_Node(cursor0, nodes, x);
-				index_nodes += 1;	
-			}
-			//So we don't repeat the x
-			cursor1 = cursor0;
-
 		}else{
 			terminate = 0;
 		}
@@ -117,11 +106,13 @@ void block_parser(char *block, Node *nodes, double *x){
 
 	//Checking for '+','-'
 	terminate = 1;
-	while(terminate == 1){	
-		cursor0 = cursor(block, '+', '-', AT);
-		if(*cursor0 == '+' || *cursor0 == '-'){
-			//print_block(block);
-			create_Node(cursor0, nodes, x);
+	cursor_ = block;
+	while(terminate == 1){
+		printf("4");
+		cursor_ = cursor(cursor_, '+', '-', AT);
+		if(*cursor_ == '+' || *cursor_ == '-'){
+			print_block(block);
+			create_Node(cursor_, nodes, x);
 			index_nodes += 1;
 		}else{
 			terminate = 0;
@@ -129,9 +120,9 @@ void block_parser(char *block, Node *nodes, double *x){
 	}
 	
 	//Removing block( '(' and ')' );
-	cursor0 = cursor(block, ')', ')', RIGHT);
+	cursor_ = cursor(block, ')', ')', RIGHT);
 	*block = 0;
-	*cursor0 = 0;
+	*cursor_ = 0;
 }
 
 

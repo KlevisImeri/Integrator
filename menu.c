@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "CnvCharNum.h"
+#include "charlib.h"
+
 /*
     Parameters: options to the menu as pointers
     (partion, lowerb bound, upper bound)
@@ -47,4 +48,10 @@ void start_menu(double *partition, double *lower_bound, double *upper_bound){
         //For the system clear to work
         printf("\n");
     }while(char_to_int(selector) != 3);
+
+    //Clearing the '\n'
+    while( selector != '\n'){
+        scanf("%c", &selector);
+    }
+    
 }

@@ -2,11 +2,16 @@ x
 -x
 1/x
 1/(-x)
+(3x)+1
 x^2
 exp(x^2)
-1/2 *x^4 + x^2- 5 +x
+1/2 *x^4 + x^2- 5.32 +x
 x*sin(x)
 sin(x) + cos(x) -x + 1
 sin(x) + exp(x)/(x)
 cos(3x) + sin(x^2)
 (x^3-x)/(x^2-4)
+
+apply at cursor lib the is num or is between or the new idea
+fic (3x)+1
+fix(chechking for invalid 3x+1 input

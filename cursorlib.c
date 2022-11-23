@@ -16,9 +16,10 @@ typedef enum Direction{
 	-mode (the mode of cursor)
 	Output:
 	-pointer in the char array to the found char
-	Transversing in the char array given the starting adress. 
-	Cheacks if the given character exists according to mode.
-	Gives back the adress of that char.
+	Traversing in the char array given the starting address.
+	Checks if the given character exists according to mode.
+	Gives back the address of that char. If the char doesn’t exits
+	it returns the ‘)’ address.
 */
 char *cursor(char *cursor, char char1, char char2, Direction mode){
 	char char3 = 'x';

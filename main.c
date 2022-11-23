@@ -26,8 +26,9 @@ double interval_integrator(Node *nodes, size_t number_of_nodes, double *start, d
 }
 
 int main(){
+
 	//Parameters and menu for the the programm
-	//You can canche the startup parameters in here
+	//You can change the startup parameters in here
 	double step = 0.001, start = -3.14, end = 3.14; 
 	start_menu(&step, &start, &end);
 	//Start < end always 
@@ -37,11 +38,9 @@ int main(){
 		start = temp;
 	}
 
-	//Taking the expression from the user.
-	//Putting it in a dynamically allocated array.
+	//Takind a valid expression form the user
 	size_t size_expression;
-	char *expression = take_expression(&size_expression);
-	if(expression == NULL) return 1;
+	char *expression = take_valid_expression(&size_expression);
 	
 
 	//Creationg a dynamic array where the nodes will be stored
@@ -58,7 +57,7 @@ int main(){
 
 
 	// printf("--------\n");
-	// print_Node_array(nodes, number_of_nodes);
+	print_Node_array(nodes, number_of_nodes);
 
 	
 	create_bitmap(nodes, number_of_nodes, &start, end, step, 2000, 2000, 600, 6);

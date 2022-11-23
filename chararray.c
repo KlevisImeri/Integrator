@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "charlib.h"
 
 /*
 	Parameter: array and the size
 	Return: None
-	Prints array in array format in the console
+	It prints the array in the console. The format:
+    { elm1, elm2,...., elmN }
 */
 void print_char_array(char *array, size_t size){
 	printf("{");
@@ -36,19 +38,18 @@ void copyarr(char* destination, char* source, size_t size_source){
 	Asks the user to input the mathematical expression 
 	and dynamically allocates the char array for the 
 	expression. Returns the pointer to the array.
-	Array format: {'(' expression ')'}
+	The format of the array created: {'(' expression ')'}.
 */
 char *take_expression(size_t *size){
 	//preperation
+	system("clear");
 	size[0] = 1;
 	char c;
-	//clering scanf from any unwated '\n'
-	while(scanf("%c", &c) == 1 && c != '\n'){};
 
 	//Creating the array
-	char *expressionArr = (char *)malloc(sizeof(char)*size[0]);
-	//if(expressionArr == 0) return NULL;
-	expressionArr[0] = '(';
+	char *expression = (char *)malloc(sizeof(char)*size[0]);
+	if(expression == NULL) return NULL;
+	expression[0] = '(';
 
 	//Asking the user
 	printf("Enter the function: ");
@@ -62,27 +63,134 @@ char *take_expression(size_t *size){
 		//Extending the array. 
 		//+2: 1 for newchar and 1 for ')'
 		char *newArr = (char *)malloc(sizeof(char)*(size[0]+2));
-		if(newArr == 0){
+		if(newArr == NULL){
 			printf("Error: The array couldn't dynamically allocate!");
 			return NULL;
 		}
 		//Coping the previous array to the newone
-		copyarr(newArr, expressionArr, size[0]);
+		copyarr(newArr, expression, size[0]);
 		//Putiong the newchar in 
 		newArr[*size] = c;
 		//Freeing the previos array 
-		free(expressionArr);
+		free(expression);
 		//Making it point tho the new one
-		expressionArr = newArr;
+		expression = newArr;
 		//The size increased by one
 		size[0]++;
 	}
 	//Putting and ')' at the and for the format
-	expressionArr[size[0]] = ')';
+	expression[size[0]] = ')';
 
 	//compesatig for +2
 	size[0]++;
-	//print_char_array(expressionArr, size[0]);
 	//printf("Size of expression: %ld\n", size[0]);
-	return expressionArr;
+	//print_char_array(expression, size[0]);
+
+	return expression;
+}
+
+/*
+
+*/
+int is_expression_valid(char *expression, size_t size){
+
+	//cheking if it is empty size>2
+	if(!(size>2)){
+		printf("ERROR! You wrote nothing!\n");
+		return 0;	
+	}
+	
+	//Using one loop to chechk the conditions (more efficient)
+	//Preperation
+	int number_of_openbracket = 0;
+	int number_of_closebracket = 0;
+	int one_after_the_other = 0; 
+	for(int i = 0; i<size; i++){
+		//Chechking if the number of closing and opening brackets is the same
+		//If they are not than expression not valid
+		if(expression[i] == '('){
+			number_of_openbracket++;
+		}else if(expression[i] == ')'){
+			number_of_closebracket++;
+		}
+
+		//Chechking if operations are one after the other
+		//Example: 3*+4 (this is not valid expression)
+		if(is_binary_operator(expression[i]) && is_binary_operator(expression[i+1])){
+			printf("ERROR! You have two binary operations one after the other!\n");
+			return 0;
+		}
+
+		//Chechking if user inputed a valid is fucntion (small letter)
+		if(is_small_letter(expression[i], 'x')){
+			//what_fucntion returns 0 for invalid functions
+			// printf("%c", *(expression+i));
+			// printf("%d", what_function(expression+i));
+			if(!what_function(expression+i)){
+				printf("ERROR! You may have spelling mistakes or inputed a word which is not a fucntion\n");
+				return 0;
+			}
+		}
+
+		//Cheking if user puted the variable multiplication on parantheses
+		if(expression[i]=='x'){
+
+		}
+	}
+
+
+	if(number_of_openbracket != number_of_closebracket){
+		printf("ERROR! You didn't close a bracket!\n");
+		return 0;
+	}
+
+	return 1;
+}	
+
+/*		
+	Parameters:
+    - size    |is the pointer to the size of the array
+ 
+	Returns:
+	- expression    | imputed by the user as a dynamically allocated 
+					| char array
+	- size        	| of the char array (pointer)
+ 
+	Usage:
+	Uses the take_expression() function to take expression form the user and 
+	then uses the is_expression_valid() function to check if the user imputed 
+	a valid input. If not it loops until the user enters a valid expression. 
+	When the user enters a valid input it returns the dynamically allocated 
+	array of the expression.
+*/
+char *take_valid_expression(size_t *size){
+	//preperation
+	char *expression = take_expression(size);
+	int valid = is_expression_valid(expression, *size);
+
+	//Check validity if not, clear and repeat
+	while(valid == 0){
+		//free the expression 
+		free(expression);
+
+		printf("Press Enter to continue...");
+		//Waiting for the enter
+		char c;
+		while(scanf("%c", &c) == 1 && c != '\n'){}
+
+		//take expression from user
+		expression = take_expression(size);
+		//Check for bad memory allocation
+		if(expression == NULL){
+			printf("ERROR! The memory cound't be allocted!\n"
+				   "Check if you have enough memory in your device.");
+			return NULL;
+		}
+
+		//validitate
+		valid = is_expression_valid(expression, *size);
+		//print_char_array(expression, *size);
+	}
+
+	return expression;
 }
