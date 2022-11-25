@@ -20,7 +20,7 @@ typedef struct Node{
 int number_of_nodes_in_expression(char *expression, size_t size_expression);
 void print_Node(Node node);
 void print_Node_array(Node *array, size_t size);
-void create_Node(char *adress, Node *nodes, double *variable);
+void create_Node(char *adress, Node *nodes, double *variable, int index_nodes);
 double eval_Nodes(Node *Nodes, size_t number_of_nodes);
 
 #endif

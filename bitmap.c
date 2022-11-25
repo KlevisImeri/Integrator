@@ -4,10 +4,29 @@
 #include <math.h>
 #include "nodelib.h"
 
+/*
+	Usage:
+	It is used to store a RGB color.
+*/
 typedef struct rgb_data{
 		float r, g, b;
 } rgb_data;
 
+/*
+	Parameters:
+	- filename         | the bmp image filename
+	- width height dpi    | pixel parameters
+	- pixel_dat        | the array of all pixels
+	
+	Returns:
+	- functions.bmp        | the bmp image
+	
+	Usage:
+	It takes all the settings and the array of pixels. 
+	It creates the heder of the bpm and attaches the array of pixels. 
+	It create the bmp.
+
+*/
 void save_bitmap(const char *file_name, int width, int height, int dpi, rgb_data *pixel_data){
 	FILE *image;
 	int image_size = width * height;
@@ -60,25 +79,43 @@ void save_bitmap(const char *file_name, int width, int height, int dpi, rgb_data
 
 	for (int i = 0; i < image_size; i++){
 
-	rgb_data BGR = pixel_data[i];
+		rgb_data BGR = pixel_data[i];
 
-	float red   = (BGR.r);
-	float green = (BGR.g);
-	float blue  = (BGR.b);
+		float red   = (BGR.r);
+		float green = (BGR.g);
+		float blue  = (BGR.b);
 
-	unsigned char color[3] = {
-		blue, green, red
-	};
+		unsigned char color[3] = {
+			blue, green, red
+		};
 
-	fwrite(color, 1, sizeof(color), image);
+		fwrite(color, 1, sizeof(color), image);
 	}
 
 	fclose(image);
 }
 
-void create_bitmap(Node *operations, size_t size, double *start, double end, double step, int width, int height, int dpi, int numberline_length){
+/*
+	Parameters:
+	- nodes             | the array of nodes (expression)
+	- size, start, step    | partition, lower, upper bound
+	- width, height    , dpi    | pixel data
+	
+	Returns:
+	- functions.bmp        | the bmp image
+	
+	Usage:
+	It takes the expressions and the integration parameters. 
+	Creates the array of pixels. Create the number lines, 
+	the function, the rectangles. Calls the save_bitmap() to save the bmp.
+*/
+void create_bitmap(Node *nodes, size_t size, double *start, double end, double step, int width, int height, int dpi, int numberline_length){
 	//saving it for resetting the start
 	double i = *start;
+	
+	//it doesn't have any effect in the image if step < 0.001
+	//why do more calculations
+	if(step < 0.001) step = 0.001;
 
 	rgb_data *pixels = (rgb_data *)malloc(width * height* 3*sizeof(float));
 
@@ -110,7 +147,7 @@ void create_bitmap(Node *operations, size_t size, double *start, double end, dou
 	int square_height;
 	int start_x;
 	for(; *start <= end; *start += step){
-		number_line_y = eval_Nodes(operations, size);
+		number_line_y = eval_Nodes(nodes, size);
 		square_height = (number_line_y+numberline_length)*divisions;
 		start_x = (*start + numberline_length)*divisions;
 		square_width = (*start + step + numberline_length)*divisions;
@@ -120,7 +157,7 @@ void create_bitmap(Node *operations, size_t size, double *start, double end, dou
 			if(square_height>=height/2){
 				//!!!y<height because of the segmentation falt (ovewrflow)
 				for(y = height/2; y<=square_height && y<height; y++){
-					int a = y * width + x;
+					int a = y * width + x+4;
 
 					// pixels[a].r = 15;
 					// pixels[a].g = 172;
@@ -165,9 +202,9 @@ void create_bitmap(Node *operations, size_t size, double *start, double end, dou
 	//puting it at the end so it is shown upfront
 	//it neds the start pointer for eval_Node
 	for(x = 0; x < width; x++){
-		*start = (x/divisions)-numberline_length;
-		number_line_y = eval_Nodes(operations, size);
-		y = round((number_line_y+numberline_length)*divisions);
+		*start = ((x-4)/divisions)-numberline_length;
+		number_line_y = eval_Nodes(nodes, size);
+		y = (number_line_y+numberline_length)*divisions;
 		if(y<height && y>0){
 			int a = y * width + x;
 
@@ -206,35 +243,40 @@ void create_bitmap(Node *operations, size_t size, double *start, double end, dou
 	}
 
 	//y = 0 line
-	for(x = 0; x < width; x++){
-		number_line_y = 0;
-		y = (number_line_y+numberline_length)*divisions;
-		if(y<=height && y>=0){
-			int a = y * width + x;
+	x = width/2;
+	for(y = 0; y<=height; y++){
+		int a = y* width + x;
 
-			pixels[a].r = 255;
-			pixels[a].g = 255;
-			pixels[a].b = 255;
-		}
+		pixels[a].r = 255;
+		pixels[a].g = 255;
+		pixels[a].b = 255;
 	}
 
 	//x = 0 line
-	for(y = 0; y < height; y++){
-		number_line_x = 0;
-		x = (number_line_x+numberline_length)*divisions;
-		if(x<=height && x>=0){
+	y = width/2;
+	for(x = 0; x<=width; x++){
+		int a = y* width + x;
+
+		pixels[a].r = 255;
+		pixels[a].g = 255;
+		pixels[a].b = 255;
+	}
+	
+
+	//divisions line for x
+	for(x=4; x<=width; x+=divisions){
+		for(y = height/2-20; y<=height/2+20; y++){
 			int a = y * width + x;
 
 			pixels[a].r = 255;
 			pixels[a].g = 255;
 			pixels[a].b = 255;
-		}
+		}	
 	}
 
 	//divisions line for x
-	for(number_line_x=-numberline_length; number_line_x<=numberline_length; number_line_x++){
-		x = (number_line_x+numberline_length)*divisions;
-		for(y = height/2-20; y<=height/2+20; y++){
+	for(y=4; y<=height; y+=divisions){
+		for(x = width/2-20; x<=width/2+20; x++){
 			int a = y * width + x;
 
 			pixels[a].r = 255;

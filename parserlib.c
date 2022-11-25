@@ -1,7 +1,6 @@
 #include "nodelib.h"
 #include "cursorlib.h"
 
-extern int index_nodes;
 
 /*
 	Definitions:
@@ -23,7 +22,7 @@ void print_block(char *block){
 		We increment it if we find '(' and decrement if ')'.
 		This can only equal 0 in the end of the expression.
 	*/
-	printf("{,(, ");
+	printf("{, (, ");
 	int number_of_openbracket = 1;
 	for(int i=1; number_of_openbracket!=0; i++){
 		if(block[i] == '('){
@@ -40,16 +39,52 @@ void print_block(char *block){
 
 /*	
 	Parameters:
-	-block(wihtout smaller blocks into it).(Refer to the recursin we did in the parser!)
-	-the array of nodes. It puts the created nodes into the array.
-	-the nodes depend on the value x form outside.
-	Return: void
-	One of the most important fucntions.
-	Searches for nodes and creates them according with
-	the order of operations and the hiearchy.
+    - block         | block of expressions
+    - nodes         | the array of nodes
+    - x            	| the pointer to the variable
+    - index_nodes   | keep track of the number of nodes created
+ 
+	Returns:
+		- index_nodes    | the number of nodes created
+		- nodes        | the array filled with the nodes (pointer)
+	
+	Usage:
+	You give it the block of expressions and the variable x and the array where to put the nodes. It fills the array with all the nodes in the block of expressions. It searches the nodes using hierarchy.
+	It uses the create_node() function to create and put the nodes in 
+	the array of nodes.
+	Hierarchy:
+		- functions
+		- ^
+		- * / <num>x (x)
+		- + -
+	Example:
+	(x+2/x^2)    | searching for functions
+	↑→
+	(x+2/x^2)    | did not find functions
+			↑
+	(x+2/x^2)    | searching for '^'
+	↑→     
+	(x+2/x^2)    | if found '^'. create_node(↑)
+		  ↑
+	(x+2/[])    | searching for '^'
+		 ↑→    
+	(x+2/[])    | did not find '^'
+		   ↑
+	(x+2/[])    | searching for '*' '/' <num>x (x)
+	↑→
+	(x+2/[])    | if found '/'. create_node(↑)
+		↑
+	(x+[])    | did not find '*' '/' <num>x (x)
+		↑
+	(x+2/[])    | searching for '+' '-'
+	↑→
+	(x+2/[])    | it found '+'. create_node(↑)
+	  ↑
+	([])        | remove '(' and ')'
+	[]        | returns the number of nodes created = index_nodes + 3
 */
-void block_parser(char *block, Node *nodes, double *x){
-	print_block(block);
+int block_parser(char *block, Node *nodes, double *x, int index_nodes){
+	//print_block(block);
 	/* Notes:
 		Usage of while loop, cursor and the order of while's 
 		taks care of the hierarchy of the operations.
@@ -57,72 +92,49 @@ void block_parser(char *block, Node *nodes, double *x){
 
 	//preparing
 	char *cursor_;
-	int terminate;
 
 	//Checking for functions in the block
-	terminate = 1;
-	cursor_ = block;
-	while(terminate == 1){
-		cursor_ = cursor(cursor_, 'a', 'z', BETWEEN);
-		if(*cursor_ == ')'){
-			terminate = 0;
-		}else{
-			printf("1");
-			print_block(block);
-			create_Node(cursor_, nodes, x);
-			index_nodes += 1;
-		}
-	}
+	for(cursor_ = cursor(block, ')', ')', ')', FUNCTION); *cursor_ != ')'; cursor_ = cursor(cursor_, ')', ')', ')', FUNCTION)){
+		//printf("Type: func\n");
+		//print_block(block);
+		create_Node(cursor_, nodes, x, index_nodes);
+		index_nodes += 1;
+	}	
 
 	//checking for '^'
-	terminate = 1;
-	cursor_ = block;
-	while(terminate == 1){
-		cursor_ = cursor(cursor_, ')', '^', RIGHT);
-		if(*cursor_ == '^'){
-			printf("2");
-			print_block(block);
-			create_Node(cursor_, nodes, x);
-			index_nodes += 1;
-		}else{
-			terminate = 0;
-		}
+	for(cursor_ = cursor(block, '^', ')', ')', RIGHT); *cursor_ != ')'; cursor_ = cursor(cursor_, '^', ')', ')', RIGHT)){
+		//printf("Type: ^\n");
+		//print_block(block);
+		create_Node(cursor_, nodes, x, index_nodes);
+		index_nodes += 1;
 	}
 	
 	//Checking for '*', '/','<num>x'
-	terminate = 1;
-	cursor_ = block;
-	while(terminate == 1){ 
-		cursor_ = cursor(cursor_, '*', '/', ATX);
-		if(*cursor_== '*' || *cursor_ == '/' || is_variable_multiplicaton(cursor_)){
-			printf("3");
-			print_block(block);
-			create_Node(cursor_, nodes, x);
-			index_nodes += 1;
-		}else{
-			terminate = 0;
-		}
+	for(cursor_ = cursor(block, '*', '/', 'x', RIGHT); *cursor_ != ')'; cursor_ = cursor(cursor_, '*', '/', 'x', RIGHT)){ 
+		//if it is not '<num>x' but plane x just go to the next iteration
+		if(*cursor_ == 'x' && !is_variable_multiplicaton(cursor_)) continue;
+		// printf("Type: * /\n");
+		// print_block(block);
+		create_Node(cursor_, nodes, x, index_nodes);
+		index_nodes += 1;
 	}
 
 	//Checking for '+','-'
-	terminate = 1;
-	cursor_ = block;
-	while(terminate == 1){
-		printf("4");
-		cursor_ = cursor(cursor_, '+', '-', AT);
-		if(*cursor_ == '+' || *cursor_ == '-'){
-			print_block(block);
-			create_Node(cursor_, nodes, x);
-			index_nodes += 1;
-		}else{
-			terminate = 0;
-		}
+	for(cursor_ = cursor(block, '+', '-', ')', RIGHT); *cursor_ != ')'; cursor_ = cursor(cursor_, '+', '-', ')', RIGHT)){
+		//printf("Type: + -\n");
+		//print_block(block);
+		create_Node(cursor_, nodes, x, index_nodes);
+		index_nodes += 1;
 	}
-	
+
+	//print_block(block);
+	//printf("---------------------\n");
 	//Removing block( '(' and ')' );
-	cursor_ = cursor(block, ')', ')', RIGHT);
+	cursor_ = cursor(block, ')', ')', ')', RIGHT);
 	*block = 0;
-	*cursor_ = 0;
+	*cursor_ = 0;	
+
+	return index_nodes;
 }
 
 
@@ -166,22 +178,22 @@ void block_parser(char *block, Node *nodes, double *x){
 	↑→										↑
 */ 
 
-void parser(char *block, Node *nodes, double *x){
-	// //printing before starting
+int parser(char *block, Node *nodes, double *x, int index_nodes){
 	// printf("1:  ");
 	// print_block(block);
 
 	//finding a new block
 	char *newBlock_start;
-	newBlock_start = cursor(block, '(', ')', RIGHT);
+	newBlock_start = cursor(block, '(', ')', ')', RIGHT);
 
 	//Until it finds a new block it creates a new parser fo that block
 	while(*newBlock_start == '('){
 		//Recurisve paarsing
-		parser(newBlock_start, nodes, x);
+		index_nodes = parser(newBlock_start, nodes, x, index_nodes);
+		// printf("%d", index_nodes);
 		//To keep ti loopin to the next '('
-		newBlock_start = cursor(block, '(', ')', RIGHT);
+		newBlock_start = cursor(block, '(', ')', ')', RIGHT);
 	}
 
-	block_parser(block, nodes, x);
+	return block_parser(block, nodes, x, index_nodes);
 }	

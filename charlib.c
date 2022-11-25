@@ -19,7 +19,7 @@ int what_function(char *cursor){
 	char function[10];
 	int i;
 	//i<9 is checked so we don't overflow (9 because '\0')
-	for(i = 0; cursor[i] != 0  && cursor[i] != ')' && i<9; i++){
+	for(i = 0; cursor[i] != 0  && cursor[i] != '(' && i<9; i++){
 		function[i] = cursor[i];
 	}
 	function[i] = '\0';
@@ -38,6 +38,9 @@ int what_function(char *cursor){
 	return 0;
 }
 
+/*
+	It checs if inputed char is a binary operator
+*/
 int is_binary_operator(char c){
 	switch(c){
 		case '^': return 1;
@@ -49,10 +52,29 @@ int is_binary_operator(char c){
 	return 0;
 }
 
-int is_small_letter(char c, char ommit){
+/*
+	It checs if inputed char is a small leter.
+	The omit is ommited from leters.
+*/
+int is_small_letter(char c, char omit){
 	//Checking with ASCII if it is a letter
 	//The char shouldn't be the ommited char
-	if(c >= 'a' && c <= 'z' && c != ommit){
+	if(c >= 'a' && c <= 'z' && c != omit){
+		return 1;
+	}
+	return 0;
+}
+
+/*
+	It checs if inputed char is a letter.
+	The omit is ommited from leters.
+*/
+int is_letter(char c, char omit){
+	//if big letter
+	if(c >= 'A' && c <= 'Z' && c != omit){
+		return 1;
+	}
+	if(is_small_letter(c, omit)){
 		return 1;
 	}
 	return 0;
@@ -141,7 +163,8 @@ int string_to_int(char *start){
 	int num = 0;
 	
 	for(int i=0; is_num(start[-i]); i++){
-		num += char_to_int(*start) * pow(10, i);
+		num += char_to_int(start[-i]) * pow(10, i);
+		//printf("num: %d\n", num);
 		start[-i] = '\0';		//Make the int string to '\0'
 	}
 
@@ -181,25 +204,27 @@ int string_to_int(char *start){
 									  ↑→
 	It returns the 0.16 decimal number.
 */
-double string_to_decimal(char *start){
+double string_to_decimal(char *cursor){
 	/* Preperation */
-	start++; //start from first digit
 	double num = 0.0;
 
-	for(int i=0; is_num(start[i]); i++){
-		num += char_to_int(*start) * pow(10, -i);
-		start[i] = '\0';	//Make the dec string to '\0'
+	for(int i=1; is_num(cursor[i]); i++){
+		num += char_to_int(cursor[i]) * pow(10, -i);
+		//printf("num: %f\n", num);
+		cursor[i] = '\0';	//Make the dec string to '\0'
 	}
 
 	//printf("num: %f\n", num);
 	return num;
 }
 
-//converting a char to double
-//Takes in the adress of the first or last dig depending on direction
-double convert_to_num(char *adress, Direction DIR){
+/*
+	Converts a char to a double deciaml.
+	Takes in the adress of the first or last dig depending on direction.
+*/
+double convert_to_num(char *address, Direction DIR){
 	// printf("%c\n", *adress);
-	char *cursor = adress;
+	char *cursor = address;
 	int num = 0;
 	double decimal = 0;
 	switch(DIR){
@@ -234,7 +259,7 @@ double convert_to_num(char *adress, Direction DIR){
 			}else{
 				//if there is no '.' it means there is only an integer
 				//you strat from the binary operation
-				num = string_to_int(adress+1);
+				num = string_to_int(address+1);
 				//there is adress+1 because the adress is at the number 
 				//and not at the operator
 			}
@@ -244,17 +269,22 @@ double convert_to_num(char *adress, Direction DIR){
 	}
 
 	//add the int and dec parts
-	//printf("Number: %f\n", num+decimal);
+	//printf("Number: %d\n", num);
+	// printf("Number: %f\n", decimal);
 	return num+decimal;
 }
 
+/*
+	Cheks if the value at the adress is of the form <num>x
+*/
 int is_variable_multiplicaton(char *cursor){
+	//printf("Value at cursor: %c", *cursor);
  	/*	  
  		We chechk for (<num>x) or (x)
 						    ↑	   ↑		 
 			             cursor is at x	
 	*/
-	if((is_num(cursor[-1]) || (cursor[-1] == '(')) && cursor[1] == ')'){
+	if(*cursor == 'x' && (is_num(cursor[-1]) || cursor[-1] == '(') && cursor[1] == ')'){
 		return 1;
 	}
 	return 0;

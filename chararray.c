@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "charlib.h"
+#include "nodelib.h"
 
 /*
 	Parameter: array and the size
@@ -41,71 +42,71 @@ void copyarr(char* destination, char* source, size_t size_source){
 	The format of the array created: {'(' expression ')'}.
 */
 char *take_expression(size_t *size){
-	//preperation
+	/*preperation*/
 	system("clear");
 	size[0] = 1;
 	char c;
 
-	//Creating the array
+	/*Creating the array*/
 	char *expression = (char *)malloc(sizeof(char)*size[0]);
 	if(expression == NULL) return NULL;
 	expression[0] = '(';
 
-	//Asking the user
+	/*Asking the user*/
 	printf("Enter the function: ");
 
-	//Inputing the expression into the array
+	/*Inputing the expression into the array*/
 	while(scanf("%c", &c) == 1 && c != '\n'){
 		//Removing the spaces
 		if(c == ' '){
 			continue;
 		} 
-		//Extending the array. 
-		//+2: 1 for newchar and 1 for ')'
+		/*Extending the array.*/
+		/*+2: 1 for newchar and 1 for ')'*/
 		char *newArr = (char *)malloc(sizeof(char)*(size[0]+2));
 		if(newArr == NULL){
 			printf("Error: The array couldn't dynamically allocate!");
 			return NULL;
 		}
-		//Coping the previous array to the newone
+		/*Coping the previous array to the newone*/
 		copyarr(newArr, expression, size[0]);
-		//Putiong the newchar in 
+		/*Putiong the newchar in */
 		newArr[*size] = c;
-		//Freeing the previos array 
+		/*Freeing the previos array */
 		free(expression);
-		//Making it point tho the new one
+		/*Making it point tho the new one*/
 		expression = newArr;
-		//The size increased by one
+		/*The size increased by one*/
 		size[0]++;
 	}
-	//Putting and ')' at the and for the format
+	/*Putting and ')' at the and for the format*/
 	expression[size[0]] = ')';
 
-	//compesatig for +2
+	/*compesatig for +2*/
 	size[0]++;
-	//printf("Size of expression: %ld\n", size[0]);
-	//print_char_array(expression, size[0]);
+	/*printf("Size of expression: %ld\n", size[0]);*/
+	/*print_char_array(expression, size[0]);*/
 
 	return expression;
 }
 
 /*
-
+	It checks if the user has eneterd valid parameters
 */
 int is_expression_valid(char *expression, size_t size){
 
-	//cheking if it is empty size>2
+	/*cheking if it is empty size>2*/
 	if(!(size>2)){
 		printf("ERROR! You wrote nothing!\n");
 		return 0;	
 	}
 	
-	//Using one loop to chechk the conditions (more efficient)
-	//Preperation
+	/*Using one loop to chechk the conditions (more efficient)*/
+	/*Preperation*/
 	int number_of_openbracket = 0;
 	int number_of_closebracket = 0;
-	int one_after_the_other = 0; 
 	for(int i = 0; i<size; i++){
+		//printf("i is at :%c\n", expression[i]);
 		//Chechking if the number of closing and opening brackets is the same
 		//If they are not than expression not valid
 		if(expression[i] == '('){
@@ -113,6 +114,7 @@ int is_expression_valid(char *expression, size_t size){
 		}else if(expression[i] == ')'){
 			number_of_closebracket++;
 		}
+		//printf("( %d ) %d\n", number_of_openbracket, number_of_closebracket);
 
 		//Chechking if operations are one after the other
 		//Example: 3*+4 (this is not valid expression)
@@ -122,25 +124,40 @@ int is_expression_valid(char *expression, size_t size){
 		}
 
 		//Chechking if user inputed a valid is fucntion (small letter)
-		if(is_small_letter(expression[i], 'x')){
+		if(is_letter(expression[i], 'x')){
 			//what_fucntion returns 0 for invalid functions
-			// printf("%c", *(expression+i));
-			// printf("%d", what_function(expression+i));
+			//printf("%c", *(expression+i));
+			//printf("%d\n", what_function(expression+i));
 			if(!what_function(expression+i)){
-				printf("ERROR! You may have spelling mistakes or inputed a word which is not a fucntion\n");
+				printf("ERROR! You may have spelling mistakes or inputted a which is not a function\n");
 				return 0;
 			}
+			//to go to the end of the function.
+			while(is_small_letter(expression[i],'(')){
+				//printf("inside the while\n");
+				i++;
+			}
+			i--; //to not get i++ from the for loop
 		}
-
-		//Cheking if user puted the variable multiplication on parantheses
-		if(expression[i]=='x'){
-
+		//(1) => (1.0) becuase it is a node identifier
+		if(expression[i-2] == '('&& is_num(expression[i-1]) && expression[i] == ')'){
+			printf("Error! You can't have a (%c). Make it (%c.0)!\n", expression[i-1], expression[i-1]);
+			return 0;
+		}
+		//3x => (3x)
+		if(expression[i-3] != '(' && is_num(expression[i-2]) && expression[i-1] == 'x' && expression[i] != ')'){
+			printf("Error! You entered %cx without parantheses! Try (%cx)\n", expression[i-2], expression[i-2]);
+			return 0;
 		}
 	}
 
-
 	if(number_of_openbracket != number_of_closebracket){
 		printf("ERROR! You didn't close a bracket!\n");
+		return 0;
+	}
+
+	if(!number_of_nodes_in_expression(expression, size)){
+		printf("Error! There are no nodes. If you entered jus a plan number try <num> => +<num>\n");
 		return 0;
 	}
 

@@ -5,7 +5,7 @@
 #include "cursorlib.h"
 
 void print_block(char *block);
-void block_parser(char *block, Node *nodes, double *x);
-void parser(char *block, Node *nodes, double *x);
+int parser(char *block, Node *nodes, double *x, int index_nodes);
+int block_parser(char *block, Node *nodes, double *x, int index_nodes);
 
 #endif
