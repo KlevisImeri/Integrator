@@ -106,45 +106,45 @@ int is_expression_valid(char *expression, size_t size){
 	int number_of_openbracket = 0;
 	int number_of_closebracket = 0;
 	for(int i = 0; i<size; i++){
-		//printf("i is at :%c\n", expression[i]);
-		//Chechking if the number of closing and opening brackets is the same
-		//If they are not than expression not valid
+		/* printf("i is at :%c\n", expression[i]); */
+		/* Chechking if the number of closing and opening brackets is the same */
+		/* If they are not than expression not valid */
 		if(expression[i] == '('){
 			number_of_openbracket++;
 		}else if(expression[i] == ')'){
 			number_of_closebracket++;
 		}
-		//printf("( %d ) %d\n", number_of_openbracket, number_of_closebracket);
+		/* printf("( %d ) %d\n", number_of_openbracket, number_of_closebracket); */
 
-		//Chechking if operations are one after the other
-		//Example: 3*+4 (this is not valid expression)
+		/* Chechking if operations are one after the other */
+		/* Example: 3*+4 (this is not valid expression) */
 		if(is_binary_operator(expression[i]) && is_binary_operator(expression[i+1])){
 			printf("ERROR! You have two binary operations one after the other!\n");
 			return 0;
 		}
 
-		//Chechking if user inputed a valid is fucntion (small letter)
+		/* Chechking if user inputed a valid is fucntion (small letter) */
 		if(is_letter(expression[i], 'x')){
-			//what_fucntion returns 0 for invalid functions
-			//printf("%c", *(expression+i));
-			//printf("%d\n", what_function(expression+i));
+			/* what_fucntion returns 0 for invalid functions */
+			/* printf("%c", *(expression+i)); */
+			/* printf("%d\n", what_function(expression+i)); */
 			if(!what_function(expression+i)){
 				printf("ERROR! You may have spelling mistakes or inputted a which is not a function\n");
 				return 0;
 			}
-			//to go to the end of the function.
+			/* to go to the end of the function. */
 			while(is_small_letter(expression[i],'(')){
-				//printf("inside the while\n");
+				/*printf("inside the while\n");*/
 				i++;
 			}
-			i--; //to not get i++ from the for loop
+			i--; /*to not get i++ from the for loop*/
 		}
-		//(1) => (1.0) becuase it is a node identifier
+		/*(1) => (1.0) becuase it is a node identifier*/
 		if(expression[i-2] == '('&& is_num(expression[i-1]) && expression[i] == ')'){
 			printf("Error! You can't have a (%c). Make it (%c.0)!\n", expression[i-1], expression[i-1]);
 			return 0;
 		}
-		//3x => (3x)
+		/* 3x => (3x) */
 		if(expression[i-3] != '(' && is_num(expression[i-2]) && expression[i-1] == 'x' && expression[i] != ')'){
 			printf("Error! You entered %cx without parantheses! Try (%cx)\n", expression[i-2], expression[i-2]);
 			return 0;
@@ -181,32 +181,32 @@ int is_expression_valid(char *expression, size_t size){
 	array of the expression.
 */
 char *take_valid_expression(size_t *size){
-	//preperation
+	/* preperation */
 	char *expression = take_expression(size);
 	int valid = is_expression_valid(expression, *size);
 
-	//Check validity if not, clear and repeat
+	/* Check validity if not, clear and repeat */
 	while(valid == 0){
-		//free the expression 
+		/*free the expression*/
 		free(expression);
 
 		printf("Press Enter to continue...");
-		//Waiting for the enter
+		/* Waiting for the enter */
 		char c;
 		while(scanf("%c", &c) == 1 && c != '\n'){}
 
-		//take expression from user
+		/* take expression from user */
 		expression = take_expression(size);
-		//Check for bad memory allocation
+		/* Check for bad memory allocation */
 		if(expression == NULL){
 			printf("ERROR! The memory cound't be allocted!\n"
 				   "Check if you have enough memory in your device.");
 			return NULL;
 		}
 
-		//validitate
+		/* validitate */
 		valid = is_expression_valid(expression, *size);
-		//print_char_array(expression, *size);
+		/* print_char_array(expression, *size); */
 	}
 
 	return expression;
